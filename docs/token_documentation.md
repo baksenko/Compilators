@@ -1,4 +1,4 @@
-# Tokens — gRPC Protobuf to Java Translator
+# Tokens — Protobuf to Java Translator
 
 > Lexical tokens recognized by the lexer when parsing `.proto` files (proto3 syntax).
 
@@ -36,10 +36,6 @@
 | `OPTION` | `option` |
 | `MESSAGE` | `message` |
 | `ENUM` | `enum` |
-| `SERVICE` | `service` |
-| `RPC` | `rpc` |
-| `RETURNS` | `returns` |
-| `STREAM` | `stream` |
 
 ## Keywords — Field Modifiers
 
@@ -113,4 +109,4 @@
 ---
 
 > Based on the [Protocol Buffers Language Specification (Proto3)](https://protobuf.dev/reference/protobuf/proto3-spec/).
-> This token set covers the full proto3 + gRPC service/rpc syntax needed for translation to Java classes.
+> This token set covers the full proto3 syntax needed for translation to Java classes.
