@@ -1,0 +1,56 @@
+syntax = "proto3";
+
+package com.example;
+
+// A simple address book application
+
+enum PhoneType {
+  PHONE_TYPE_UNSPECIFIED = 0;
+  MOBILE = 1;
+  HOME = 2;
+  WORK = 3;
+}
+
+message PhoneNumber {
+  string number = 1;
+  PhoneType type = 2;
+}
+
+message Person {
+  string name = 1;
+  int32 id = 2;
+  string email = 3;
+  repeated PhoneNumber phones = 4;
+  optional string nickname = 5;
+
+  enum Visibility {
+    PUBLIC = 0;
+    PRIVATE = 1;
+    FRIENDS_ONLY = 2;
+  }
+
+  Visibility visibility = 6;
+
+  // Nested message
+  message Address {
+    string street = 1;
+    string city = 2;
+    string state = 3;
+    string zip_code = 4;
+  }
+
+  Address home_address = 7;
+  map<string, string> attributes = 8;
+
+  oneof contact_method {
+    string phone = 9;
+    string email_address = 10;
+  }
+
+  reserved 100, 200 to 300;
+  reserved "old_field", "deprecated_field";
+}
+
+message AddressBook {
+  repeated Person people = 1;
+}
