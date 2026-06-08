@@ -1,0 +1,52 @@
+// ============================================================
+// error_example.proto
+// This file contains INTENTIONAL syntax errors to demonstrate
+// that the compiler correctly detects and reports parse errors.
+//
+// Errors included:
+//   1. Missing semicolon after syntax declaration
+//   2. Missing '=' in field assignment
+//   3. Missing closing brace for a message
+//   4. Invalid field number (identifier instead of integer)
+//   5. Unexpected token at top level
+// ============================================================
+
+syntax = "proto3"
+
+package com.example.errors;
+
+// ERROR 1 (above): Missing semicolon after syntax = "proto3"
+//   Expected: syntax = "proto3";
+//   Parser will throw:
+//     ParseException: Expected SEMICOLON but got PACKAGE ...
+
+message BrokenMessage {
+  string name = 1;
+  int32 id 2;
+  // ERROR 2 (above): Missing '=' between field name and number
+  //   Expected: int32 id = 2;
+  //   Parser will throw:
+  //     ParseException: Expected EQUALS but got INTEGER_LITERAL ...
+}
+
+message IncompleteMessage {
+  string title = 1;
+  bool active = 2;
+// ERROR 3: Missing closing brace '}'
+//   Parser will hit EOF while still inside the message body
+//   and throw:
+//     ParseException: Expected RIGHT_BRACE but got EOF ...
+
+message AnotherBroken {
+  string value = abc;
+  // ERROR 4: Field number must be an INTEGER_LITERAL, not an identifier
+  //   Expected: string value = 1;
+  //   Parser will throw:
+  //     ParseException: Expected INTEGER_LITERAL but got IDENTIFIER ...
+}
+
+123illegal_top_level
+// ERROR 5: Unexpected token at the top level
+//   The parser expects message, enum, import, package, option, or ';'
+//   Parser will throw:
+//     ParseException: Unexpected top-level token ...
