@@ -14,26 +14,6 @@ Program umożliwia automatyczne generowanie klas Java (z polami, getterami, sett
 ## Rodzaj translatora
 Kompilator (translator kod źródłowy → kod źródłowy). Tłumaczy deklaratywny kod `.proto` na postać obiektową ze ścisłym systemem typów w języku Java.
 
-## Pipeline
-```
-plik .proto
-    │
-    ▼
- Lexer (ANTLR4)          ← tokeny
-    │
-    ▼
- Parser (ANTLR4)         ← drzewo rozbioru (Parse Tree)
-    │
-    ▼
- AST Visitor             ← własne węzły AST (ASTBuilder.java)
-    │
-    ▼
- Code Generator          ← kod Java (JavaCodeGenerator.java)
-    │
-    ▼
- Pliki .java             → wynik (klasy Java)
-```
-
 ## Planowany wynik działania programu
 Plik lub zestaw plików z wygenerowanym kodem źródłowym `.java`, z bezbłędnie odwzorowaną strukturą wiadomości, paczek i enumów z początkowego pliku `.proto`.
 
@@ -42,19 +22,6 @@ Java (wersja 17).
 
 ## Generator parsera
 ANTLR4 (wersja 4.13.2).
-
-## Kluczowe decyzje projektowe
-
-| Kwestia | Decyzja |
-|---------|---------|
-| Typy skalarne | Pełne mapowanie proto3 → Java (`int32`→`int`, `string`→`String`, `bytes`→`byte[]` itd.) |
-| Pola `repeated` | Generowane jako `List<BoxedType>` |
-| Pola `map` | Generowane jako `Map<K, V>` z metodą `put` |
-| Pola `oneof` | Enum case + wzajemne czyszczenie pól w setterach |
-| Zagnieżdżone message | Generowane jako `public static class` wewnątrz klasy nadrzędnej |
-| Zagnieżdżone enum | Generowane jako `public enum` wewnątrz klasy nadrzędnej |
-| `reserved` | Parsowane do AST (walidacja numerów pól) |
-| Wynik | Osobny plik `.java` dla każdego top-level message i enum |
 
 ## Wspierane konstrukcje — przykłady
 
