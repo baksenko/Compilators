@@ -497,6 +497,276 @@ Usage: java Main <input.proto> [output_directory]
   [output_directory]  Directory for generated .java files (default: ./output)
 ```
 
+## Przykład wyjścia
+
+Dla pliku `test/example.proto`:
+
+```protobuf
+syntax = "proto3";
+
+package com.example;
+
+enum PhoneType {
+  PHONE_TYPE_UNSPECIFIED = 0;
+  MOBILE = 1;
+  HOME = 2;
+  WORK = 3;
+}
+
+message PhoneNumber {
+  string number = 1;
+  PhoneType type = 2;
+}
+
+message Person {
+  string name = 1;
+  int32 id = 2;
+  string email = 3;
+  repeated PhoneNumber phones = 4;
+  optional string nickname = 5;
+
+  enum Visibility {
+    PUBLIC = 0;
+    PRIVATE = 1;
+    FRIENDS_ONLY = 2;
+  }
+
+  Visibility visibility = 6;
+
+  message Address {
+    string street = 1;
+    string city = 2;
+    string state = 3;
+    string zip_code = 4;
+  }
+
+  Address home_address = 7;
+  map<string, string> attributes = 8;
+
+  oneof contact_method {
+    string phone = 9;
+    string email_address = 10;
+  }
+
+  reserved 100, 200 to 300;
+  reserved "old_field", "deprecated_field";
+}
+
+message AddressBook {
+  repeated Person people = 1;
+}
+```
+
+Kompilator generuje **4 pliki `.java`** w katalogu wyjściowym:
+
+### `PhoneType.java` — enum najwyższego poziomu
+
+```java
+package com.example;
+
+public enum PhoneType {
+    PHONE_TYPE_UNSPECIFIED(0),
+    MOBILE(1),
+    HOME(2),
+    WORK(3);
+
+    private final int number;
+
+    PhoneType(int number) {
+        this.number = number;
+    }
+
+    public int getNumber() {
+        return number;
+    }
+
+    public static PhoneType forNumber(int value) {
+        for (PhoneType e : values()) {
+            if (e.number == value) return e;
+        }
+        return null;
+    }
+}
+```
+
+### `PhoneNumber.java` — prosta wiadomość z polem referencyjnym
+
+```java
+package com.example;
+
+import java.util.List;
+import java.util.ArrayList;
+import java.util.Map;
+import java.util.HashMap;
+import java.util.Objects;
+
+public class PhoneNumber {
+
+    private String number;
+    private PhoneType type;
+
+    public PhoneNumber() {}
+
+    public String getNumber() { return this.number; }
+    public void setNumber(String number) { this.number = number; }
+
+    public PhoneType getType() { return this.type; }
+    public void setType(PhoneType type) { this.type = type; }
+
+    @Override
+    public String toString() {
+        return "PhoneNumber{" +
+            "number=" + number + ", " +
+            "type=" + type +
+            '}';
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        PhoneNumber that = (PhoneNumber) o;
+        return Objects.equals(number, that.number) &&
+            Objects.equals(type, that.type);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(number, type);
+    }
+}
+```
+
+### `Person.java` — złożona wiadomość (nested enum, nested message, map, oneof)
+
+```java
+package com.example;
+
+import java.util.List;
+import java.util.ArrayList;
+import java.util.Map;
+import java.util.HashMap;
+import java.util.Objects;
+import com.example.PhoneNumber;
+
+public class Person {
+
+    public enum Visibility {
+        PUBLIC(0),
+        PRIVATE(1),
+        FRIENDS_ONLY(2);
+
+        private final int number;
+
+        Visibility(int number) { this.number = number; }
+        public int getNumber() { return number; }
+
+        public static Visibility forNumber(int value) {
+            for (Visibility e : values()) {
+                if (e.number == value) return e;
+            }
+            return null;
+        }
+    }
+
+    public static class Address {
+        private String street;
+        private String city;
+        private String state;
+        private String zip_code;
+
+        public Address() {}
+
+        public String getStreet() { return this.street; }
+        public void setStreet(String street) { this.street = street; }
+
+        public String getCity() { return this.city; }
+        public void setCity(String city) { this.city = city; }
+
+        public String getState() { return this.state; }
+        public void setState(String state) { this.state = state; }
+
+        public String getZip_code() { return this.zip_code; }
+        public void setZip_code(String zip_code) { this.zip_code = zip_code; }
+
+        @Override
+        public String toString() { /* ... */ }
+
+        @Override
+        public boolean equals(Object o) { /* ... */ }
+
+        @Override
+        public int hashCode() { return Objects.hash(street, city, state, zip_code); }
+    }
+
+    private String name;
+    private int id;
+    private String email;
+    private List<PhoneNumber> phones;
+    private String nickname;
+    private Visibility visibility;
+    private Address home_address;
+    private Map<String, String> attributes = new HashMap<>();
+
+    // ── oneof contact_method ──
+    public enum Contact_methodCase {
+        CONTACT_METHOD_NOT_SET, PHONE, EMAIL_ADDRESS,
+    }
+
+    private Contact_methodCase contact_methodCase = Contact_methodCase.CONTACT_METHOD_NOT_SET;
+    private String phone;
+    private String email_address;
+
+    public Person() {}
+
+    // gettery, settery, toString, equals, hashCode …
+}
+```
+
+### `AddressBook.java` — wiadomość z polem `repeated` innego typu
+
+```java
+package com.example;
+
+import java.util.List;
+import java.util.ArrayList;
+import java.util.Map;
+import java.util.HashMap;
+import java.util.Objects;
+
+public class AddressBook {
+
+    private List<Person> people;
+
+    public AddressBook() {}
+
+    public List<Person> getPeople() { return this.people; }
+    public void setPeople(List<Person> people) { this.people = people; }
+
+    @Override
+    public String toString() {
+        return "AddressBook{" +
+            "people=" + people +
+            '}';
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        AddressBook that = (AddressBook) o;
+        return Objects.equals(people, that.people);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(people);
+    }
+}
+```
+
+---
+
 ## Przykłady diagnostyki błędów
 
 Poniższe komendy celowo zawierają błędy i pokazują diagnostykę na poziomie parsera.
